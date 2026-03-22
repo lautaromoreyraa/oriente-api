@@ -13,5 +13,3 @@ Este repositorio contiene el backend para la administración de la landing page 
 - Validación de datos y manejo de excepciones.
 
 ---
-
-Para más información sobre los endpoints disponibles, consulta la colección de Postman incluida en el repositorio.
