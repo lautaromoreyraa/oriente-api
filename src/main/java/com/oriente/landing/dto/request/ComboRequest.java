@@ -15,6 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ComboRequest {
 
+    //ComboRequest
     @NotBlank(message = "El slug no puede estar vacío")
     private String slug;
 

@@ -10,6 +10,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
+//about section
 @Entity
 @Table(name = "about_section")
 @Data

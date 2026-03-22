@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class HeroSectionRequest {
 
+    //HeroSectionRequest
     @NotBlank(message = "El título no puede estar vacío")
     private String title;
 

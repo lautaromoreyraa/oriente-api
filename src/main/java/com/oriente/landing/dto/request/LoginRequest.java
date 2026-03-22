@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LoginRequest {
 
+    //LoginRequest
     @NotBlank(message = "El nombre de usuario no puede estar vacío")
     private String username;
 

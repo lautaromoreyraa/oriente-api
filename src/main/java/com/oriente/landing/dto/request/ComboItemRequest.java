@@ -15,6 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ComboItemRequest {
 
+    //ComboItemRequest
     @NotBlank(message = "La descripción no puede estar vacía")
     private String description;
 

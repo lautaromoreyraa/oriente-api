@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AboutSectionRequest {
 
+    //AboutSectionRequest
     @NotBlank(message = "El encabezado no puede estar vacío")
     private String heading;
 

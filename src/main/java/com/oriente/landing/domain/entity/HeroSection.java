@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class HeroSection {
 
+    //HeroSection
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

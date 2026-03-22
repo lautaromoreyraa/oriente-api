@@ -20,6 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 public class Combo {
 
+    //Combo
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

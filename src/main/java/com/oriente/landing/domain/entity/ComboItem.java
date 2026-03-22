@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ComboItem {
 
+    //ComboItem
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ServiceRequest {
 
+    //ServiceRequest
     @NotBlank(message = "El slug no puede estar vacío")
     private String slug;
 
