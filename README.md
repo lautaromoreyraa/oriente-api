@@ -5,7 +5,7 @@ Este repositorio contiene el backend para la administración de la landing page 
 ## Tecnologías principales
 - **Java** con **Spring Boot**
 - **Maven** para la gestión de dependencias
-- **PostgreSQL** como base de datos
+- **MySQL** como base de datos
 
 ## Funcionalidades principales
 - Gestión de secciones de contenido dinámico para la landing page.
