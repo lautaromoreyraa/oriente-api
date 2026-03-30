@@ -1,4 +1,4 @@
-# Oriente Landing Page Backend
+# Oriente Landing -- Backend
 
 Este repositorio contiene el backend para la administración de la landing page de Oriente, un consultorio especializado en kinesiología y estética personal. La API está diseñada para gestionar secciones como "About", "Combos", "Hero Section" y "Services" de la página web.
 
