@@ -14,15 +14,17 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AboutSectionResponse {
 
-    private Long id;
-
-    private String heading;
-
-    private String body;
-
-    private String imageUrl;
-
+    private Long    id;
+    private String  heading;
+    private String  body;
+    private String  imageUrl;
     private Boolean active;
+    private String stat1Value;
+    private String stat1Label;
+    private String stat2Value;
+    private String stat2Label;
+    private String stat3Value;
+    private String stat3Label;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
