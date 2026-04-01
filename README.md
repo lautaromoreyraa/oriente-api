@@ -12,7 +12,7 @@ Este repositorio contiene el backend para la administración de la landing page 
 - Endpoints RESTful para la administración de datos.
 - Validación de datos y manejo de excepciones.
 
-## Arquitectura y patrones
+### Arquitectura y patrones
 - Layered Architecture — separación en capas Controller → Service → Repository → Entity. Cada capa tiene una única responsabilidad y se comunica solo con la inmediata inferior.
 - DTO Pattern — los datos nunca salen de la capa de persistencia como entidades crudas. Se usa un Request para entrada y un Response para salida, desacoplando la API del modelo de dominio.
 - Repository Pattern — acceso a datos abstraído mediante interfaces JpaRepository. La lógica de negocio no sabe cómo se persisten los datos.

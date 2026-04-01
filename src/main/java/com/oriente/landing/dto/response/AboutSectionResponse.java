@@ -26,6 +26,16 @@ public class AboutSectionResponse {
     private String stat3Value;
     private String stat3Label;
 
+    // ── Diferenciales editables ───────────────────────────
+    private String diff1Title;
+    private String diff1Desc;
+    private String diff2Title;
+    private String diff2Desc;
+    private String diff3Title;
+    private String diff3Desc;
+    private String diff4Title;
+    private String diff4Desc;
+
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
 

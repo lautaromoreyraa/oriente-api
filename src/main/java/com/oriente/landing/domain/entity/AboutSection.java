@@ -53,6 +53,31 @@ public class AboutSection {
     @Column(name = "stat3_label", length = 60)
     private String stat3Label;
 
+    // ── Diferenciales editables ───────────────────────────
+    @Column(name = "diff1_title", length = 120)
+    private String diff1Title;
+
+    @Column(name = "diff1_desc", columnDefinition = "TEXT")
+    private String diff1Desc;
+
+    @Column(name = "diff2_title", length = 120)
+    private String diff2Title;
+
+    @Column(name = "diff2_desc", columnDefinition = "TEXT")
+    private String diff2Desc;
+
+    @Column(name = "diff3_title", length = 120)
+    private String diff3Title;
+
+    @Column(name = "diff3_desc", columnDefinition = "TEXT")
+    private String diff3Desc;
+
+    @Column(name = "diff4_title", length = 120)
+    private String diff4Title;
+
+    @Column(name = "diff4_desc", columnDefinition = "TEXT")
+    private String diff4Desc;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
