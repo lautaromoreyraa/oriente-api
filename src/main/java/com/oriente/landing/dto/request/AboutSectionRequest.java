@@ -39,4 +39,25 @@ public class AboutSectionRequest {
 
     @Size(max = 60)
     private String stat3Label;
+
+    // ── Diferenciales editables ───────────────────────────
+    @Size(max = 120)
+    private String diff1Title;
+
+    private String diff1Desc;
+
+    @Size(max = 120)
+    private String diff2Title;
+
+    private String diff2Desc;
+
+    @Size(max = 120)
+    private String diff3Title;
+
+    private String diff3Desc;
+
+    @Size(max = 120)
+    private String diff4Title;
+
+    private String diff4Desc;
 }
