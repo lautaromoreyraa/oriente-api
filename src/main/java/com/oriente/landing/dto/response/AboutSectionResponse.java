@@ -35,6 +35,7 @@ public class AboutSectionResponse {
     private String diff3Desc;
     private String diff4Title;
     private String diff4Desc;
+    private String teamImagesJson;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;

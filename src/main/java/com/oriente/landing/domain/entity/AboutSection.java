@@ -78,6 +78,9 @@ public class AboutSection {
     @Column(name = "diff4_desc", columnDefinition = "TEXT")
     private String diff4Desc;
 
+    @Column(name = "team_images_json", columnDefinition = "TEXT")
+    private String teamImagesJson;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
