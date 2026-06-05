@@ -48,6 +48,9 @@ public class ComboServiceImpl implements ComboService {
     @Override
     public ComboResponse create(ComboRequest request) {
         Combo entity = mapper.toEntity(request);
+        if (entity.getItems() != null) {
+            entity.getItems().forEach(item -> item.setCombo(entity));
+        }
         Combo saved = repository.save(entity);
         return mapper.toResponse(saved);
     }
@@ -72,7 +75,9 @@ public class ComboServiceImpl implements ComboService {
                         return item;
                     })
                     .collect(Collectors.toList());
-            entity.setItems(newItems);
+            List<ComboItem> existingItems = entity.getItems();
+            existingItems.clear();
+            existingItems.addAll(newItems);
         }
 
         Combo updated = repository.save(entity);
