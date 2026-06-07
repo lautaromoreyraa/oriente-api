@@ -18,6 +18,7 @@ public class AboutSectionResponse {
     private String  heading;
     private String  body;
     private String  imageUrl;
+    private String  teamImagesJson;
     private Boolean active;
     private String stat1Value;
     private String stat1Label;

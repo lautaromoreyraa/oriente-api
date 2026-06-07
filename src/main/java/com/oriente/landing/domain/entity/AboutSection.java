@@ -31,6 +31,9 @@ public class AboutSection {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(name = "team_images_json", columnDefinition = "TEXT")
+    private String teamImagesJson;
+
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
     private Boolean active = true;
 

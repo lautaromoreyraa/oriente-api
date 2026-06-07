@@ -20,6 +20,8 @@ public class AboutSectionRequest {
 
     private String imageUrl;
 
+    private String teamImagesJson;
+
     private Boolean active = true;
 
     @Size(max = 20, message = "El valor de la estadística no puede superar 20 caracteres")
