@@ -78,15 +78,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String method = request.getMethod();
         String path = request.getRequestURI();
 
-        // GET y POST /auth/login son públicos
+        // Preflight CORS — siempre público
+        if ("OPTIONS".equalsIgnoreCase(method)) {
+            return false;
+        }
+
+        // Login público
         if (path.equals("/api/v1/auth/login")) {
             return false;
         }
 
-        /* GET es público para todo /api/v1/**
-          Esto permite que los endpoints GET sean accesibles sin autenticación,
-          mientras que POST, PUT, DELETE en /api/v1/** requerirán un token JWT válido.
-         */
+        // GETs públicos para la landing
         if ("GET".equalsIgnoreCase(method)) {
             return false;
         }
