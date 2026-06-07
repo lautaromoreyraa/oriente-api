@@ -62,6 +62,4 @@ public class AboutSectionRequest {
     private String diff4Title;
 
     private String diff4Desc;
-
-    private String teamImagesJson;
 }
