@@ -1,15 +1,24 @@
 package com.oriente.landing.repository;
 
-import com.oriente.landing.domain.entity.Combo;
+import com.oriente.landing.domain.Combo;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
-@Repository
 public interface ComboRepository extends JpaRepository<Combo, Long> {
+
+    @EntityGraph(attributePaths = "items")
+    List<Combo> findAllByActivoTrueOrderByOrdenAsc();
+
+    @EntityGraph(attributePaths = "items")
+    List<Combo> findAllByOrderByOrdenAsc();
+
+    @EntityGraph(attributePaths = "items")
     Optional<Combo> findBySlug(String slug);
 
-    List<Combo> findByActiveTrue();
+    boolean existsBySlug(String slug);
+
+    boolean existsBySlugAndIdNot(String slug, Long id);
 }

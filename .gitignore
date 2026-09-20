@@ -39,3 +39,12 @@ src/main/resources/application-local.yaml
 src/main/resources/application-local.*.yaml
 .postman_collection.json
 .dockerignore
+### Notas de trabajo — no se versionan
+plan.md
+CLAUDE.md
+AGENTS.md
+MEMORY.md
+.claude/
+.cursorrules
+notas/
+!README.md

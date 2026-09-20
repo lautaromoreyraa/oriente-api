@@ -1,49 +1,74 @@
 spring:
   application:
-    name: oriente-landing-backend
+    name: oriente-api
+
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
+    url: ${DB_URL:jdbc:mysql://localhost:3306/oriente?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${DB_USERNAME:oriente}
+    # Sin default: una password de base con valor por defecto es una password conocida.
     password: ${DB_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       connection-timeout: 5000
       maximum-pool-size: 5
+
   jpa:
     hibernate:
-      ddl-auto: update
+      # Flyway es el unico dueno del esquema. Un update automatico al renombrar
+      # un campo deja la columna vieja poblada y la nueva vacia, sin avisar.
+      ddl-auto: none
     show-sql: false
-    database-platform: org.hibernate.dialect.MySQLDialect
+    open-in-view: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
+        # UTC en los dos lados: el contenedor de la base arranca con
+        # --default-time-zone=+00:00 y aca se guarda en UTC.
         jdbc:
+          time_zone: UTC
           batch_size: 20
         order_inserts: true
         order_updates: true
-    open-in-view: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    # El esquema de produccion ya existe, creado por el ddl-auto: update anterior.
+    # V1 describe ese estado: en una base que ya lo tiene, Flyway lo marca como
+    # aplicado en lugar de intentar crear tablas existentes.
+    baseline-on-migrate: true
+    baseline-version: 1
+
   jackson:
     default-property-inclusion: non_null
 
 server:
   port: ${PORT:8080}
-  servlet:
-    context-path: /
 
 logging:
   level:
     root: INFO
-    org.springframework: INFO
     org.springframework.security: INFO
     org.hibernate: WARN
 
-app:
-  admin:
-    username: ${ADMIN_USERNAME}
-    password: ${ADMIN_PASSWORD}
-  jwt:
-    secret: ${JWT_SECRET}
-    expiration: ${JWT_EXPIRATION:86400000}
-  cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:4173}
+oriente:
+  seguridad:
+    administrador:
+      usuario: ${ADMIN_USERNAME:orienteadmin}
+      # Sin default, a proposito.
+      password: ${ADMIN_PASSWORD}
+    jwt:
+      # Sin default, a proposito.
+      secret: ${JWT_SECRET}
+      expiracion-en-milisegundos: ${JWT_EXPIRATION:86400000}
+    cors:
+      # Dos listas separadas: la web publica y el panel no comparten origen.
+      origenes-publicos: ${CORS_ORIGENES_PUBLICOS:http://localhost:4321,http://localhost:5173,http://localhost:4173}
+      origenes-de-administracion: ${CORS_ORIGENES_DE_ADMINISTRACION:http://localhost:5174,http://localhost:5173}
+  cloudinary:
+    nombre-de-la-nube: ${CLOUDINARY_CLOUD_NAME:}
+    api-key: ${CLOUDINARY_API_KEY:}
+    # Vacio significa "sin configurar": la aplicacion arranca y el endpoint de
+    # firma responde 503 con un mensaje claro, en lugar de firmar con una clave
+    # de ejemplo que nadie revisaria.
+    api-secret: ${CLOUDINARY_API_SECRET:}
+    carpeta: ${CLOUDINARY_FOLDER:oriente}

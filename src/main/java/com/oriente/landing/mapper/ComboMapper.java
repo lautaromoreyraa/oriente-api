@@ -1,21 +1,15 @@
 package com.oriente.landing.mapper;
 
-import com.oriente.landing.domain.entity.Combo;
-import com.oriente.landing.dto.request.ComboRequest;
-import com.oriente.landing.dto.response.ComboResponse;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
+import com.oriente.landing.domain.Combo;
+import com.oriente.landing.dto.administracion.combo.ComboRequest;
+import com.oriente.landing.dto.administracion.combo.ComboResponse;
+import com.oriente.landing.dto.publico.ComboPublicoResponse;
 
-import java.util.List;
-
-@Mapper(componentModel = "spring", uses = ComboItemMapper.class)
 public interface ComboMapper {
 
-    ComboResponse toResponse(Combo entity);
+    void aplicar(ComboRequest request, Combo combo);
 
-    Combo toEntity(ComboRequest request);
+    ComboResponse aResponse(Combo combo);
 
-    void updateEntity(ComboRequest request, @MappingTarget Combo entity);
-
-    List<ComboResponse> toResponseList(List<Combo> entities);
+    ComboPublicoResponse aPublico(Combo combo);
 }
