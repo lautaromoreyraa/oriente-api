@@ -11,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -63,6 +64,17 @@ public class ManejadorGlobalDeErrores {
     public ResponseEntity<RespuestaDeError> manejarTipoInvalido(MethodArgumentTypeMismatchException ex) {
         return ResponseEntity.badRequest().body(RespuestaDeError.de(
                 "El parametro '" + ex.getName() + "' tiene un formato invalido", HttpStatus.BAD_REQUEST.value()));
+    }
+
+    /**
+     * La ruta no existe. Sin esto caia en el manejador general y devolvia 500, que
+     * le dice a quien llama que el servidor se rompio cuando en realidad escribio
+     * mal la direccion.
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<RespuestaDeError> manejarRutaInexistente(NoResourceFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(RespuestaDeError.de("La ruta pedida no existe", HttpStatus.NOT_FOUND.value()));
     }
 
     @ExceptionHandler(AuthenticationException.class)

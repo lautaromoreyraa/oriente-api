@@ -7,22 +7,31 @@ import com.oriente.landing.exception.RecursoNoEncontradoException;
 import com.oriente.landing.exception.ReglaDeNegocioException;
 import com.oriente.landing.mapper.ServicioMapper;
 import com.oriente.landing.repository.ServicioRepository;
+import com.oriente.landing.service.administracion.imagen.BorradorDeImagenes;
+import com.oriente.landing.service.administracion.imagen.ImagenesQuedaronHuerfanas;
 import com.oriente.landing.service.administracion.servicio.CatalogoDeServiciosService;
 import com.oriente.landing.util.GeneradorDeSlug;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class CatalogoDeServiciosServiceImpl implements CatalogoDeServiciosService {
 
     private final ServicioRepository servicioRepository;
     private final ServicioMapper servicioMapper;
+    private final ApplicationEventPublisher eventos;
 
-    public CatalogoDeServiciosServiceImpl(ServicioRepository servicioRepository, ServicioMapper servicioMapper) {
+    public CatalogoDeServiciosServiceImpl(ServicioRepository servicioRepository,
+                                          ServicioMapper servicioMapper,
+                                          ApplicationEventPublisher eventos) {
         this.servicioRepository = servicioRepository;
         this.servicioMapper = servicioMapper;
+        this.eventos = eventos;
     }
 
     @Override
@@ -52,15 +61,41 @@ public class CatalogoDeServiciosServiceImpl implements CatalogoDeServiciosServic
     @Transactional
     public ServicioResponse actualizar(Long id, ServicioRequest request) {
         Servicio servicio = buscar(id);
+
+        // Las que estaban antes de tocar nada: las que no sobrevivan a la edicion
+        // dejan de tener quien las nombre y hay que borrarlas del proveedor.
+        Set<String> imagenesPrevias = imagenesDe(servicio);
+
         servicio.setSlug(resolverSlug(request, id));
         servicioMapper.aplicar(request, servicio);
-        return servicioMapper.aResponse(servicioRepository.save(servicio));
+        Servicio guardado = servicioRepository.save(servicio);
+
+        eventos.publishEvent(ImagenesQuedaronHuerfanas.de(
+                BorradorDeImagenes.loQueSobra(imagenesPrevias, imagenesDe(guardado))));
+
+        return servicioMapper.aResponse(guardado);
     }
 
     @Override
     @Transactional
     public void eliminar(Long id) {
-        servicioRepository.delete(buscar(id));
+        Servicio servicio = buscar(id);
+        Set<String> imagenes = imagenesDe(servicio);
+        servicioRepository.delete(servicio);
+        eventos.publishEvent(ImagenesQuedaronHuerfanas.de(imagenes));
+    }
+
+    /** La foto principal mas las del carrusel. */
+    private Set<String> imagenesDe(Servicio servicio) {
+        Set<String> publicIds = new HashSet<>();
+        if (servicio.getImagenPublicId() != null) {
+            publicIds.add(servicio.getImagenPublicId());
+        }
+        servicio.getImagenes().stream()
+                .map(imagen -> imagen.getImagenPublicId())
+                .filter(publicId -> publicId != null)
+                .forEach(publicIds::add);
+        return publicIds;
     }
 
     private Servicio buscar(Long id) {
