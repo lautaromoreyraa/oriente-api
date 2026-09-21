@@ -3,12 +3,15 @@ package com.oriente.landing.service.administracion.instagram.impl;
 import com.oriente.landing.domain.PublicacionDeInstagram;
 import com.oriente.landing.dto.administracion.instagram.PublicacionDeInstagramRequest;
 import com.oriente.landing.dto.administracion.instagram.PublicacionDeInstagramResponse;
+import com.oriente.landing.enumeration.TipoDePublicacion;
 import com.oriente.landing.exception.RecursoNoEncontradoException;
 import com.oriente.landing.exception.ReglaDeNegocioException;
 import com.oriente.landing.mapper.PublicacionDeInstagramMapper;
 import com.oriente.landing.repository.PublicacionDeInstagramRepository;
 import com.oriente.landing.service.administracion.imagen.BorradorDeImagenes;
 import com.oriente.landing.service.administracion.imagen.ImagenesQuedaronHuerfanas;
+import com.oriente.landing.service.administracion.imagen.SubidorDeArchivos;
+import com.oriente.landing.service.administracion.instagram.FuenteDeInstagram;
 import com.oriente.landing.service.administracion.instagram.PublicacionDeInstagramService;
 import com.oriente.landing.service.administracion.instagram.ResolvedorDeEnlaces;
 import com.oriente.landing.util.NormalizadorDeUrlDeInstagram;
@@ -26,16 +29,25 @@ public class PublicacionDeInstagramServiceImpl implements PublicacionDeInstagram
     private final PublicacionDeInstagramMapper publicacionMapper;
     private final ResolvedorDeEnlaces resolvedor;
     private final ApplicationEventPublisher eventos;
+    private final FuenteDeInstagram fuente;
+    private final SubidorDeArchivos subidor;
+    private final BorradorDeImagenes borrador;
 
     public PublicacionDeInstagramServiceImpl(
             PublicacionDeInstagramRepository publicacionRepository,
             PublicacionDeInstagramMapper publicacionMapper,
             ResolvedorDeEnlaces resolvedor,
-            ApplicationEventPublisher eventos) {
+            ApplicationEventPublisher eventos,
+            FuenteDeInstagram fuente,
+            SubidorDeArchivos subidor,
+            BorradorDeImagenes borrador) {
         this.publicacionRepository = publicacionRepository;
         this.publicacionMapper = publicacionMapper;
         this.resolvedor = resolvedor;
         this.eventos = eventos;
+        this.fuente = fuente;
+        this.subidor = subidor;
+        this.borrador = borrador;
     }
 
     /**
@@ -78,6 +90,71 @@ public class PublicacionDeInstagramServiceImpl implements PublicacionDeInstagram
         publicacionMapper.aplicar(conElEnlaceResuelto(request), publicacion);
         verificarQueNoEsteRepetida(publicacion.getUrl(), null);
         return publicacionMapper.aResponse(publicacionRepository.save(publicacion));
+    }
+
+    /**
+     * Sin @Transactional a proposito: tiene dos llamadas externas que pueden tardar
+     * varios segundos, y no tiene sentido tener una conexion a la base tomada
+     * mientras tanto. El unico acceso a la base que escribe es el save del final.
+     */
+    @Override
+    public PublicacionDeInstagramResponse importar(String url) {
+        String enlace = NormalizadorDeUrlDeInstagram.esEnlaceParaCompartir(url)
+                ? resolvedor.resolver(url).orElseThrow(() -> new ReglaDeNegocioException(
+                        "No se pudo abrir ese enlace para compartir. Copia el link desde la publicacion: "
+                                + "los tres puntos, Copiar enlace"))
+                : url;
+
+        String codigo = NormalizadorDeUrlDeInstagram.codigo(enlace)
+                .orElseThrow(() -> new ReglaDeNegocioException("Ese link no lleva a una publicacion"));
+
+        FuenteDeInstagram.ContenidoDeInstagram contenido = fuente.buscar(codigo)
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "Esa publicacion no esta en la cuenta de Instagram del consultorio"));
+
+        // Se chequea con el link que da Instagram y antes de subir nada: el mismo
+        // contenido puede llegar como /p/ o como /reel/, y un repetido detectado
+        // despues de subir deja archivos sueltos en Cloudinary.
+        verificarQueNoEsteRepetida(contenido.enlace(), null);
+
+        SubidorDeArchivos.ArchivoSubido video = contenido.esVideo()
+                ? subidor.subirVideo(contenido.videoUrl())
+                : null;
+        SubidorDeArchivos.ArchivoSubido imagen;
+        try {
+            imagen = contenido.imagenUrl() == null ? null : subidor.subirImagen(contenido.imagenUrl());
+        } catch (RuntimeException ex) {
+            descartar(video, null);
+            throw ex;
+        }
+
+        PublicacionDeInstagram publicacion = new PublicacionDeInstagram();
+        publicacion.setUrl(contenido.enlace());
+        publicacion.setTipo(contenido.esVideo() ? TipoDePublicacion.REEL : TipoDePublicacion.POST);
+        publicacion.setVideoUrl(video == null ? null : video.url());
+        publicacion.setVideoPublicId(video == null ? null : video.publicId());
+        publicacion.setMiniaturaUrl(imagen == null ? null : imagen.url());
+        publicacion.setMiniaturaPublicId(imagen == null ? null : imagen.publicId());
+        // Al final de la lista: lo que ya estaba ordenado no se mueve.
+        publicacion.setOrden((int) publicacionRepository.count());
+        publicacion.setActivo(true);
+
+        try {
+            return publicacionMapper.aResponse(publicacionRepository.save(publicacion));
+        } catch (RuntimeException ex) {
+            descartar(video, imagen);
+            throw ex;
+        }
+    }
+
+    /** Si la publicacion no llega a guardarse, lo que se subio no lo referencia nadie. */
+    private void descartar(SubidorDeArchivos.ArchivoSubido video, SubidorDeArchivos.ArchivoSubido imagen) {
+        if (video != null) {
+            borrador.borrarVideos(Set.of(video.publicId()));
+        }
+        if (imagen != null) {
+            borrador.borrar(Set.of(imagen.publicId()));
+        }
     }
 
     @Override

@@ -72,3 +72,8 @@ oriente:
     # de ejemplo que nadie revisaria.
     api-secret: ${CLOUDINARY_API_SECRET:}
     carpeta: ${CLOUDINARY_FOLDER:oriente}
+  instagram:
+    url-de-la-api: ${INSTAGRAM_API_URL:https://graph.instagram.com}
+    # Token de larga duracion de la cuenta profesional. Vacio significa "sin
+    # conectar": importar publicaciones responde 503 y el resto de la API anda.
+    token-de-acceso: ${INSTAGRAM_ACCESS_TOKEN:}

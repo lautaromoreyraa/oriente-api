@@ -33,6 +33,18 @@ public final class NormalizadorDeUrlDeInstagram {
             "^https?://(?:www\\.)?(?:instagram\\.com|instagr\\.am)/share/(?:[A-Za-z0-9_-]+/)?[A-Za-z0-9_-]+/?.*$",
             Pattern.CASE_INSENSITIVE);
 
+    /**
+     * Lo que valida el request antes de llegar al servicio. Es mas laxo que
+     * PUBLICACION porque tambien deja pasar los enlaces para compartir.
+     */
+    public static final String PATRON_DE_VALIDACION =
+            "^https?://(www\\.)?(instagram\\.com|instagr\\.am)/"
+                    + "((([A-Za-z0-9_.]+/)?(p|reel|reels|tv)/[A-Za-z0-9_-]+)"
+                    + "|(share/([A-Za-z0-9_-]+/)?[A-Za-z0-9_-]+))/?.*$";
+
+    public static final String MENSAJE_DE_VALIDACION =
+            "Tiene que ser un link de Instagram: una publicacion, un reel o un enlace para compartir";
+
     private NormalizadorDeUrlDeInstagram() {
     }
 
@@ -61,6 +73,19 @@ public final class NormalizadorDeUrlDeInstagram {
         }
 
         return Optional.of("https://www.instagram.com/" + tipo + "/" + codigo + "/");
+    }
+
+    /**
+     * El codigo de la publicacion (lo que va despues de /p/ o /reel/). Es lo unico
+     * que identifica el contenido: /p/CODIGO y /reel/CODIGO son la misma
+     * publicacion.
+     */
+    public static Optional<String> codigo(String url) {
+        if (url == null || url.isBlank()) {
+            return Optional.empty();
+        }
+        Matcher publicacion = PUBLICACION.matcher(url.trim());
+        return publicacion.matches() ? Optional.of(publicacion.group(2)) : Optional.empty();
     }
 
     public static boolean esEnlaceParaCompartir(String url) {

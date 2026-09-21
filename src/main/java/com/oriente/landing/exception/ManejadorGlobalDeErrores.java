@@ -39,6 +39,12 @@ public class ManejadorGlobalDeErrores {
                 .body(RespuestaDeError.de(ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE.value()));
     }
 
+    @ExceptionHandler(ServicioExternoException.class)
+    public ResponseEntity<RespuestaDeError> manejarServicioExterno(ServicioExternoException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                .body(RespuestaDeError.de(ex.getMessage(), HttpStatus.BAD_GATEWAY.value()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<RespuestaDeError> manejarValidacion(MethodArgumentNotValidException ex) {
         Map<String, String> errores = new LinkedHashMap<>();

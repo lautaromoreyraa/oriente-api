@@ -1,5 +1,6 @@
 package com.oriente.landing.dto.administracion.instagram;
 
+import com.oriente.landing.util.NormalizadorDeUrlDeInstagram;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -13,10 +14,8 @@ public record PublicacionDeInstagramRequest(
         @NotBlank(message = "La URL de la publicacion es obligatoria")
         @Size(max = 500)
         @Pattern(
-                regexp = "^https?://(www\\.)?(instagram\\.com|instagr\\.am)/"
-                        + "((([A-Za-z0-9_.]+/)?(p|reel|reels|tv)/[A-Za-z0-9_-]+)"
-                        + "|(share/([A-Za-z0-9_-]+/)?[A-Za-z0-9_-]+))/?.*$",
-                message = "Tiene que ser un link de Instagram: una publicacion, un reel o un enlace para compartir"
+                regexp = NormalizadorDeUrlDeInstagram.PATRON_DE_VALIDACION,
+                message = NormalizadorDeUrlDeInstagram.MENSAJE_DE_VALIDACION
         )
         String url,
 

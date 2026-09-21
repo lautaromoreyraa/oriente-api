@@ -13,6 +13,12 @@ public interface PublicacionDeInstagramService {
 
     PublicacionDeInstagramResponse crear(PublicacionDeInstagramRequest request);
 
+    /**
+     * Agrega una publicacion a partir de su link: el video y la portada se traen de
+     * la cuenta de Instagram y se guardan en Cloudinary.
+     */
+    PublicacionDeInstagramResponse importar(String url);
+
     PublicacionDeInstagramResponse actualizar(Long id, PublicacionDeInstagramRequest request);
 
     void eliminar(Long id);

@@ -3,6 +3,8 @@ package com.oriente.landing.util;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -88,5 +90,17 @@ class NormalizadorDeUrlDeInstagramTest {
         assertTrue(NormalizadorDeUrlDeInstagram.esReel("https://www.instagram.com/reels/ABC/"));
         assertTrue(NormalizadorDeUrlDeInstagram.esReel("https://www.instagram.com/tv/ABC/"));
         assertFalse(NormalizadorDeUrlDeInstagram.esReel("https://www.instagram.com/p/ABC/"));
+    }
+
+    @Test
+    @DisplayName("el codigo es el mismo en un post, un reel y un link copiado desde un perfil")
+    void extraeElCodigo() {
+        assertEquals(Optional.of("DdRYeNvxV8J"),
+                NormalizadorDeUrlDeInstagram.codigo("https://www.instagram.com/p/DdRYeNvxV8J/"));
+        assertEquals(Optional.of("DdRYeNvxV8J"),
+                NormalizadorDeUrlDeInstagram.codigo("https://www.instagram.com/reel/DdRYeNvxV8J/?igsh=abc"));
+        assertEquals(Optional.of("DdRYeNvxV8J"),
+                NormalizadorDeUrlDeInstagram.codigo("https://instagram.com/oriente.rcia/reel/DdRYeNvxV8J"));
+        assertTrue(NormalizadorDeUrlDeInstagram.codigo("https://www.instagram.com/share/BAabc123").isEmpty());
     }
 }

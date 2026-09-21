@@ -1,5 +1,6 @@
 package com.oriente.landing.controller.administracion;
 
+import com.oriente.landing.dto.administracion.instagram.ImportacionDeInstagramRequest;
 import com.oriente.landing.dto.administracion.instagram.PublicacionDeInstagramRequest;
 import com.oriente.landing.dto.administracion.instagram.PublicacionDeInstagramResponse;
 import com.oriente.landing.service.administracion.instagram.PublicacionDeInstagramService;
@@ -42,6 +43,13 @@ public class InstagramController {
     public ResponseEntity<PublicacionDeInstagramResponse> crear(
             @Valid @RequestBody PublicacionDeInstagramRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(publicacionService.crear(request));
+    }
+
+    /** Agrega una publicacion solo con el link: el contenido se trae de Instagram. */
+    @PostMapping("/importar")
+    public ResponseEntity<PublicacionDeInstagramResponse> importar(
+            @Valid @RequestBody ImportacionDeInstagramRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(publicacionService.importar(request.url()));
     }
 
     @PutMapping("/{id}")
