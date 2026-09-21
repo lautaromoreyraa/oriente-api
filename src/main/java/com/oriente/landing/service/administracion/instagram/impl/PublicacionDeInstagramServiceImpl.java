@@ -10,6 +10,8 @@ import com.oriente.landing.repository.PublicacionDeInstagramRepository;
 import com.oriente.landing.service.administracion.imagen.BorradorDeImagenes;
 import com.oriente.landing.service.administracion.imagen.ImagenesQuedaronHuerfanas;
 import com.oriente.landing.service.administracion.instagram.PublicacionDeInstagramService;
+import com.oriente.landing.service.administracion.instagram.ResolvedorDeEnlaces;
+import com.oriente.landing.util.NormalizadorDeUrlDeInstagram;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,15 +24,35 @@ public class PublicacionDeInstagramServiceImpl implements PublicacionDeInstagram
 
     private final PublicacionDeInstagramRepository publicacionRepository;
     private final PublicacionDeInstagramMapper publicacionMapper;
+    private final ResolvedorDeEnlaces resolvedor;
     private final ApplicationEventPublisher eventos;
 
     public PublicacionDeInstagramServiceImpl(
             PublicacionDeInstagramRepository publicacionRepository,
             PublicacionDeInstagramMapper publicacionMapper,
+            ResolvedorDeEnlaces resolvedor,
             ApplicationEventPublisher eventos) {
         this.publicacionRepository = publicacionRepository;
         this.publicacionMapper = publicacionMapper;
+        this.resolvedor = resolvedor;
         this.eventos = eventos;
+    }
+
+    /**
+     * Los links del boton Compartir no dicen a que publicacion apuntan: se siguen
+     * una vez, aca, y se guarda el destino. Si no se puede resolver, se sigue con
+     * el link original.
+     */
+    private PublicacionDeInstagramRequest conElEnlaceResuelto(PublicacionDeInstagramRequest request) {
+        if (!NormalizadorDeUrlDeInstagram.esEnlaceParaCompartir(request.url())) {
+            return request;
+        }
+
+        return resolvedor.resolver(request.url())
+                .map(resuelta -> new PublicacionDeInstagramRequest(
+                        resuelta, request.tipo(), request.titulo(), request.miniaturaUrl(),
+                        request.miniaturaPublicId(), request.orden(), request.activo()))
+                .orElse(request);
     }
 
     @Override
@@ -51,7 +73,7 @@ public class PublicacionDeInstagramServiceImpl implements PublicacionDeInstagram
     @Transactional
     public PublicacionDeInstagramResponse crear(PublicacionDeInstagramRequest request) {
         PublicacionDeInstagram publicacion = new PublicacionDeInstagram();
-        publicacionMapper.aplicar(request, publicacion);
+        publicacionMapper.aplicar(conElEnlaceResuelto(request), publicacion);
         verificarQueNoEsteRepetida(publicacion.getUrl(), null);
         return publicacionMapper.aResponse(publicacionRepository.save(publicacion));
     }
@@ -62,7 +84,7 @@ public class PublicacionDeInstagramServiceImpl implements PublicacionDeInstagram
         PublicacionDeInstagram publicacion = buscar(id);
         String miniaturaPrevia = publicacion.getMiniaturaPublicId();
 
-        publicacionMapper.aplicar(request, publicacion);
+        publicacionMapper.aplicar(conElEnlaceResuelto(request), publicacion);
         verificarQueNoEsteRepetida(publicacion.getUrl(), id);
         PublicacionDeInstagram guardada = publicacionRepository.save(publicacion);
 

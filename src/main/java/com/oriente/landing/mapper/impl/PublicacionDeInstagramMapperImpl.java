@@ -6,6 +6,7 @@ import com.oriente.landing.dto.administracion.instagram.PublicacionDeInstagramRe
 import com.oriente.landing.dto.publico.PublicacionDeInstagramPublicaResponse;
 import com.oriente.landing.enumeration.TipoDePublicacion;
 import com.oriente.landing.mapper.PublicacionDeInstagramMapper;
+import com.oriente.landing.util.NormalizadorDeUrlDeInstagram;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -28,13 +29,17 @@ public class PublicacionDeInstagramMapperImpl implements PublicacionDeInstagramM
     }
 
     /**
-     * Instagram agrega parametros de seguimiento al copiar el link (igshid, utm).
-     * Se recortan para que la misma publicacion no entre dos veces con URLs
-     * distintas, y porque el embed no los necesita.
+     * Lleva el link a su forma canonica: sin los parametros de seguimiento que
+     * Instagram agrega al copiar, sin el usuario en el medio y con el dominio
+     * unificado. Asi el mismo post copiado desde la web y desde el telefono se
+     * guarda igual, y el chequeo de repetidos lo reconoce.
+     *
+     * Un link que el normalizador no reconoce se guarda como vino: la validacion
+     * ya lo dejo pasar, y perder el dato seria peor que guardarlo sin normalizar.
      */
     private String normalizarUrl(String url) {
-        String sinParametros = url.split("\\?")[0].trim();
-        return sinParametros.endsWith("/") ? sinParametros : sinParametros + "/";
+        return NormalizadorDeUrlDeInstagram.normalizar(url)
+                .orElseGet(() -> url.split("\\?")[0].trim());
     }
 
     /**
@@ -49,9 +54,7 @@ public class PublicacionDeInstagramMapperImpl implements PublicacionDeInstagramM
                 // Un tipo mal escrito no justifica rechazar el guardado: la URL manda.
             }
         }
-        String enMinusculas = url.toLowerCase();
-        boolean esReel = enMinusculas.contains("/reel/") || enMinusculas.contains("/reels/");
-        return esReel ? TipoDePublicacion.REEL : TipoDePublicacion.POST;
+        return NormalizadorDeUrlDeInstagram.esReel(url) ? TipoDePublicacion.REEL : TipoDePublicacion.POST;
     }
 
     @Override
