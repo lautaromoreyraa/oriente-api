@@ -94,7 +94,6 @@ src/main/java/com/oriente/landing
 
 src/main/resources
 ├── application.yaml
-├── application-local.yaml.example
 └── db/migration    Migraciones de Flyway
 
 src/test/java/com/oriente/landing   Espeja la estructura, más fixture/
@@ -215,7 +214,6 @@ docker compose up --build
 
 # Sólo la base, para correr la API desde el IDE con recarga en caliente
 docker compose up db
-cp src/main/resources/application-local.yaml.example src/main/resources/application-local.yaml
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
