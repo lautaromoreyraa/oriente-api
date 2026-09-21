@@ -47,6 +47,18 @@ public class PublicacionDeInstagram {
     @Column(name = "miniatura_public_id")
     private String miniaturaPublicId;
 
+    /**
+     * El video de la publicacion, subido al mismo almacen que las imagenes.
+     *
+     * No se toma de Instagram: esas URLs vienen firmadas y expiran, igual que las
+     * de las fotos. La miniatura hace de cuadro inicial mientras el video carga.
+     */
+    @Column(name = "video_url", length = 500)
+    private String videoUrl;
+
+    @Column(name = "video_public_id")
+    private String videoPublicId;
+
     @Column(nullable = false)
     private Integer orden = 0;
 
@@ -107,6 +119,22 @@ public class PublicacionDeInstagram {
 
     public void setMiniaturaPublicId(String miniaturaPublicId) {
         this.miniaturaPublicId = miniaturaPublicId;
+    }
+
+    public String getVideoUrl() {
+        return videoUrl;
+    }
+
+    public void setVideoUrl(String videoUrl) {
+        this.videoUrl = videoUrl;
+    }
+
+    public String getVideoPublicId() {
+        return videoPublicId;
+    }
+
+    public void setVideoPublicId(String videoPublicId) {
+        this.videoPublicId = videoPublicId;
     }
 
     public Integer getOrden() {

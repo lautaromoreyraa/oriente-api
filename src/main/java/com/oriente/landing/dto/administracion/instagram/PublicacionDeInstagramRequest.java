@@ -24,6 +24,8 @@ public record PublicacionDeInstagramRequest(
         @Size(max = 255) String titulo,
         @Size(max = 500) String miniaturaUrl,
         @Size(max = 255) String miniaturaPublicId,
+        @Size(max = 500) String videoUrl,
+        @Size(max = 255) String videoPublicId,
         Integer orden,
         Boolean activo
 ) {

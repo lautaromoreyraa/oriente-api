@@ -9,6 +9,8 @@ public record PublicacionDeInstagramResponse(
         String titulo,
         String miniaturaUrl,
         String miniaturaPublicId,
+        String videoUrl,
+        String videoPublicId,
         Integer orden,
         Boolean activo,
         LocalDateTime actualizadoEn

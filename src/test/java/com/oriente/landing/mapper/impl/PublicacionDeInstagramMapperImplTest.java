@@ -14,7 +14,7 @@ class PublicacionDeInstagramMapperImplTest {
 
     private PublicacionDeInstagram aplicar(String url, String tipo) {
         PublicacionDeInstagram publicacion = new PublicacionDeInstagram();
-        mapper.aplicar(new PublicacionDeInstagramRequest(url, tipo, null, null, null, null, null), publicacion);
+        mapper.aplicar(new PublicacionDeInstagramRequest(url, tipo, null, null, null, null, null, null, null), publicacion);
         return publicacion;
     }
 

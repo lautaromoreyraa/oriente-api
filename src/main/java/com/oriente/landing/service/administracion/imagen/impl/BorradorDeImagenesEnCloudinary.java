@@ -49,11 +49,21 @@ public class BorradorDeImagenesEnCloudinary implements BorradorDeImagenes {
      */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void alQuedarHuerfanas(ImagenesQuedaronHuerfanas evento) {
-        borrar(evento.publicIds());
+        borrar(evento.imagenes());
+        borrarVideos(evento.videos());
     }
 
     @Override
     public void borrar(Set<String> publicIds) {
+        borrarTodos(publicIds, "image");
+    }
+
+    @Override
+    public void borrarVideos(Set<String> publicIds) {
+        borrarTodos(publicIds, "video");
+    }
+
+    private void borrarTodos(Set<String> publicIds, String tipoDeRecurso) {
         if (publicIds == null || publicIds.isEmpty()) {
             return;
         }
@@ -61,17 +71,17 @@ public class BorradorDeImagenesEnCloudinary implements BorradorDeImagenes {
         if (!propiedades.estaConfigurado()) {
             // Se deja constancia para que los archivos se puedan limpiar a mano:
             // sin credenciales no hay forma de pedirle a Cloudinary que los borre.
-            log.warn("Cloudinary no esta configurado: quedan {} imagenes sin borrar {}",
-                    publicIds.size(), publicIds);
+            log.warn("Cloudinary no esta configurado: quedan {} archivos ({}) sin borrar {}",
+                    publicIds.size(), tipoDeRecurso, publicIds);
             return;
         }
 
         publicIds.stream()
                 .filter(publicId -> publicId != null && !publicId.isBlank())
-                .forEach(this::borrarUna);
+                .forEach(publicId -> borrarUno(publicId, tipoDeRecurso));
     }
 
-    private void borrarUna(String publicId) {
+    private void borrarUno(String publicId, String tipoDeRecurso) {
         long marcaDeTiempo = Instant.now().getEpochSecond();
 
         Map<String, String> aFirmar = new LinkedHashMap<>();
@@ -86,7 +96,9 @@ public class BorradorDeImagenesEnCloudinary implements BorradorDeImagenes {
 
         try {
             Map<String, Object> respuesta = clienteHttp.post()
-                    .uri("/v1_1/{nube}/image/destroy", propiedades.nombreDeLaNube())
+                    // El tipo de recurso va en la ruta: un video no se borra por el
+                    // camino de las imagenes.
+                    .uri("/v1_1/{nube}/{tipo}/destroy", propiedades.nombreDeLaNube(), tipoDeRecurso)
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                     .body(formulario)
                     .retrieve()
@@ -96,15 +108,16 @@ public class BorradorDeImagenesEnCloudinary implements BorradorDeImagenes {
             // no existe: no es un error, sólo significa que no habia nada que borrar.
             Object resultado = respuesta == null ? null : respuesta.get("result");
             if ("ok".equals(resultado) || "not found".equals(resultado)) {
-                log.info("Imagen {} borrada de Cloudinary ({})", publicId, resultado);
+                log.info("Archivo {} ({}) borrado de Cloudinary ({})", publicId, tipoDeRecurso, resultado);
             } else {
-                log.warn("Cloudinary no borro la imagen {}: {}", publicId, resultado);
+                log.warn("Cloudinary no borro el archivo {} ({}): {}", publicId, tipoDeRecurso, resultado);
             }
 
         } catch (Exception ex) {
             // El registro en la base ya se borro y eso no se deshace. Queda el aviso
             // con el public_id para poder limpiarlo despues.
-            log.error("No se pudo borrar la imagen {} de Cloudinary: {}", publicId, ex.getMessage());
+            log.error("No se pudo borrar el archivo {} ({}) de Cloudinary: {}",
+                    publicId, tipoDeRecurso, ex.getMessage());
         }
     }
 }

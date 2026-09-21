@@ -47,7 +47,7 @@ class HuerfanasAlEditarTest {
         // Misma fase que el borrador real: si la transaccion no commitea, no llega.
         @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
         public void alQuedarHuerfanas(ImagenesQuedaronHuerfanas evento) {
-            recibidos.add(evento.publicIds());
+            recibidos.add(evento.imagenes());
         }
     }
 

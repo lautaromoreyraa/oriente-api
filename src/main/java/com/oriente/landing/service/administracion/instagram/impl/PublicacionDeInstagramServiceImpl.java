@@ -50,8 +50,10 @@ public class PublicacionDeInstagramServiceImpl implements PublicacionDeInstagram
 
         return resolvedor.resolver(request.url())
                 .map(resuelta -> new PublicacionDeInstagramRequest(
-                        resuelta, request.tipo(), request.titulo(), request.miniaturaUrl(),
-                        request.miniaturaPublicId(), request.orden(), request.activo()))
+                        resuelta, request.tipo(), request.titulo(),
+                        request.miniaturaUrl(), request.miniaturaPublicId(),
+                        request.videoUrl(), request.videoPublicId(),
+                        request.orden(), request.activo()))
                 .orElse(request);
     }
 
@@ -82,15 +84,16 @@ public class PublicacionDeInstagramServiceImpl implements PublicacionDeInstagram
     @Transactional
     public PublicacionDeInstagramResponse actualizar(Long id, PublicacionDeInstagramRequest request) {
         PublicacionDeInstagram publicacion = buscar(id);
-        String miniaturaPrevia = publicacion.getMiniaturaPublicId();
+        Set<String> miniaturaPrevia = comoConjunto(publicacion.getMiniaturaPublicId());
+        Set<String> videoPrevio = comoConjunto(publicacion.getVideoPublicId());
 
         publicacionMapper.aplicar(conElEnlaceResuelto(request), publicacion);
         verificarQueNoEsteRepetida(publicacion.getUrl(), id);
         PublicacionDeInstagram guardada = publicacionRepository.save(publicacion);
 
-        eventos.publishEvent(ImagenesQuedaronHuerfanas.de(BorradorDeImagenes.loQueSobra(
-                miniaturaPrevia == null ? Set.of() : Set.of(miniaturaPrevia),
-                guardada.getMiniaturaPublicId() == null ? Set.of() : Set.of(guardada.getMiniaturaPublicId()))));
+        eventos.publishEvent(ImagenesQuedaronHuerfanas.de(
+                BorradorDeImagenes.loQueSobra(miniaturaPrevia, comoConjunto(guardada.getMiniaturaPublicId())),
+                BorradorDeImagenes.loQueSobra(videoPrevio, comoConjunto(guardada.getVideoPublicId()))));
 
         return publicacionMapper.aResponse(guardada);
     }
@@ -99,12 +102,15 @@ public class PublicacionDeInstagramServiceImpl implements PublicacionDeInstagram
     @Transactional
     public void eliminar(Long id) {
         PublicacionDeInstagram publicacion = buscar(id);
-        String miniatura = publicacion.getMiniaturaPublicId();
-        publicacionRepository.delete(publicacion);
+        Set<String> miniatura = comoConjunto(publicacion.getMiniaturaPublicId());
+        Set<String> video = comoConjunto(publicacion.getVideoPublicId());
 
-        if (miniatura != null) {
-            eventos.publishEvent(ImagenesQuedaronHuerfanas.de(Set.of(miniatura)));
-        }
+        publicacionRepository.delete(publicacion);
+        eventos.publishEvent(ImagenesQuedaronHuerfanas.de(miniatura, video));
+    }
+
+    private Set<String> comoConjunto(String publicId) {
+        return publicId == null || publicId.isBlank() ? Set.of() : Set.of(publicId);
     }
 
     private PublicacionDeInstagram buscar(Long id) {

@@ -9,6 +9,8 @@ public record PublicacionDeInstagramPublicaResponse(
         String url,
         String tipo,
         String titulo,
-        String miniaturaUrl
+        /** El cuadro que se ve mientras el video carga, o la foto si no hay video. */
+        String miniaturaUrl,
+        String videoUrl
 ) {
 }

@@ -19,6 +19,8 @@ public class PublicacionDeInstagramMapperImpl implements PublicacionDeInstagramM
         publicacion.setTitulo(request.titulo());
         publicacion.setMiniaturaUrl(request.miniaturaUrl());
         publicacion.setMiniaturaPublicId(request.miniaturaPublicId());
+        publicacion.setVideoUrl(request.videoUrl());
+        publicacion.setVideoPublicId(request.videoPublicId());
 
         if (request.orden() != null) {
             publicacion.setOrden(request.orden());
@@ -66,6 +68,8 @@ public class PublicacionDeInstagramMapperImpl implements PublicacionDeInstagramM
                 publicacion.getTitulo(),
                 publicacion.getMiniaturaUrl(),
                 publicacion.getMiniaturaPublicId(),
+                publicacion.getVideoUrl(),
+                publicacion.getVideoPublicId(),
                 publicacion.getOrden(),
                 publicacion.getActivo(),
                 publicacion.getActualizadoEn()
@@ -79,7 +83,8 @@ public class PublicacionDeInstagramMapperImpl implements PublicacionDeInstagramM
                 publicacion.getUrl(),
                 publicacion.getTipo().name(),
                 publicacion.getTitulo(),
-                publicacion.getMiniaturaUrl()
+                publicacion.getMiniaturaUrl(),
+                publicacion.getVideoUrl()
         );
     }
 }

@@ -12,6 +12,9 @@ public interface BorradorDeImagenes {
      */
     void borrar(Set<String> publicIds);
 
+    /** Los videos se borran por un camino distinto al de las imagenes. */
+    void borrarVideos(Set<String> publicIds);
+
     /** Los public_id que estaban antes y ya no estan despues. */
     static Set<String> loQueSobra(Collection<String> antes, Collection<String> despues) {
         Set<String> huerfanas = new HashSet<>(antes);
