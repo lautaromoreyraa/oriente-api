@@ -69,6 +69,11 @@ public class Servicio {
     @OrderBy("orden ASC")
     private List<ImagenDeServicio> imagenes = new ArrayList<>();
 
+    /** Se administran de a una desde el panel; aca solo se leen y se borran con el servicio. */
+    @OneToMany(mappedBy = "servicio", cascade = CascadeType.REMOVE)
+    @OrderBy("orden ASC")
+    private List<PublicacionDeInstagram> publicaciones = new ArrayList<>();
+
     @CreationTimestamp
     @Column(name = "creado_en", nullable = false, updatable = false)
     private LocalDateTime creadoEn;
@@ -174,6 +179,10 @@ public class Servicio {
 
     public void setActivo(Boolean activo) {
         this.activo = activo;
+    }
+
+    public List<PublicacionDeInstagram> getPublicaciones() {
+        return publicaciones;
     }
 
     public List<ImagenDeServicio> getImagenes() {

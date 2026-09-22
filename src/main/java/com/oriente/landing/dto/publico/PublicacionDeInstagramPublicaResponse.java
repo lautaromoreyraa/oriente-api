@@ -1,9 +1,6 @@
 package com.oriente.landing.dto.publico;
 
-/**
- * Lo que la landing necesita para renderizar la fachada de una publicacion antes
- * de que el embed de Instagram cargue.
- */
+/** Un reel o un posteo, como lo muestra la tarjeta de su servicio. */
 public record PublicacionDeInstagramPublicaResponse(
         Long id,
         String url,

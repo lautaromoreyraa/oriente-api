@@ -14,14 +14,16 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 /**
- * Una publicacion de Instagram elegida para mostrarse en la landing.
+ * Un reel o un posteo de Instagram que ilustra un servicio en su tarjeta.
  *
- * Solo se guarda la URL del post: el contenido lo renderiza el embed oficial de
- * Instagram, asi que no hay tokens de Meta ni copias del contenido que puedan
- * quedar desactualizadas. miniaturaUrl es la imagen que se muestra antes de que
- * el embed cargue, y la que queda si Instagram no responde.
+ * El video y la imagen son copias en Cloudinary: las URLs del CDN de Instagram
+ * vencen a las pocas horas. Del post se guarda el link, para que la tarjeta
+ * lleve a la publicacion.
  */
 @Entity
 @Table(name = "publicacion_de_instagram",
@@ -31,6 +33,10 @@ public class PublicacionDeInstagram {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "servicio_id", nullable = false)
+    private Servicio servicio;
 
     @Column(nullable = false, unique = true, length = 500)
     private String url;
@@ -79,6 +85,14 @@ public class PublicacionDeInstagram {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Servicio getServicio() {
+        return servicio;
+    }
+
+    public void setServicio(Servicio servicio) {
+        this.servicio = servicio;
     }
 
     public String getUrl() {

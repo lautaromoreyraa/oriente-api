@@ -21,11 +21,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
+import com.oriente.landing.domain.Servicio;
+import com.oriente.landing.repository.ServicioRepository;
 
 @Service
 public class PublicacionDeInstagramServiceImpl implements PublicacionDeInstagramService {
 
     private final PublicacionDeInstagramRepository publicacionRepository;
+    private final ServicioRepository servicioRepository;
     private final PublicacionDeInstagramMapper publicacionMapper;
     private final ResolvedorDeEnlaces resolvedor;
     private final ApplicationEventPublisher eventos;
@@ -35,6 +38,7 @@ public class PublicacionDeInstagramServiceImpl implements PublicacionDeInstagram
 
     public PublicacionDeInstagramServiceImpl(
             PublicacionDeInstagramRepository publicacionRepository,
+            ServicioRepository servicioRepository,
             PublicacionDeInstagramMapper publicacionMapper,
             ResolvedorDeEnlaces resolvedor,
             ApplicationEventPublisher eventos,
@@ -42,6 +46,7 @@ public class PublicacionDeInstagramServiceImpl implements PublicacionDeInstagram
             SubidorDeArchivos subidor,
             BorradorDeImagenes borrador) {
         this.publicacionRepository = publicacionRepository;
+        this.servicioRepository = servicioRepository;
         this.publicacionMapper = publicacionMapper;
         this.resolvedor = resolvedor;
         this.eventos = eventos;
@@ -71,8 +76,8 @@ public class PublicacionDeInstagramServiceImpl implements PublicacionDeInstagram
 
     @Override
     @Transactional(readOnly = true)
-    public List<PublicacionDeInstagramResponse> listar() {
-        return publicacionRepository.findAllByOrderByOrdenAsc().stream()
+    public List<PublicacionDeInstagramResponse> listarDelServicio(Long servicioId) {
+        return publicacionRepository.findAllByServicioIdOrderByOrdenAsc(servicioId).stream()
                 .map(publicacionMapper::aResponse)
                 .toList();
     }
@@ -83,22 +88,16 @@ public class PublicacionDeInstagramServiceImpl implements PublicacionDeInstagram
         return publicacionMapper.aResponse(buscar(id));
     }
 
-    @Override
-    @Transactional
-    public PublicacionDeInstagramResponse crear(PublicacionDeInstagramRequest request) {
-        PublicacionDeInstagram publicacion = new PublicacionDeInstagram();
-        publicacionMapper.aplicar(conElEnlaceResuelto(request), publicacion);
-        verificarQueNoEsteRepetida(publicacion.getUrl(), null);
-        return publicacionMapper.aResponse(publicacionRepository.save(publicacion));
-    }
-
     /**
      * Sin @Transactional a proposito: tiene dos llamadas externas que pueden tardar
      * varios segundos, y no tiene sentido tener una conexion a la base tomada
      * mientras tanto. El unico acceso a la base que escribe es el save del final.
      */
     @Override
-    public PublicacionDeInstagramResponse importar(String url) {
+    public PublicacionDeInstagramResponse importar(Long servicioId, String url) {
+        Servicio servicio = servicioRepository.findById(servicioId)
+                .orElseThrow(() -> RecursoNoEncontradoException.porId("Servicio", servicioId));
+
         String enlace = NormalizadorDeUrlDeInstagram.esEnlaceParaCompartir(url)
                 ? resolvedor.resolver(url).orElseThrow(() -> new ReglaDeNegocioException(
                         "No se pudo abrir ese enlace para compartir. Copia el link desde la publicacion: "
@@ -129,14 +128,15 @@ public class PublicacionDeInstagramServiceImpl implements PublicacionDeInstagram
         }
 
         PublicacionDeInstagram publicacion = new PublicacionDeInstagram();
+        publicacion.setServicio(servicio);
         publicacion.setUrl(contenido.enlace());
         publicacion.setTipo(contenido.esVideo() ? TipoDePublicacion.REEL : TipoDePublicacion.POST);
         publicacion.setVideoUrl(video == null ? null : video.url());
         publicacion.setVideoPublicId(video == null ? null : video.publicId());
         publicacion.setMiniaturaUrl(imagen == null ? null : imagen.url());
         publicacion.setMiniaturaPublicId(imagen == null ? null : imagen.publicId());
-        // Al final de la lista: lo que ya estaba ordenado no se mueve.
-        publicacion.setOrden((int) publicacionRepository.count());
+        // Al final de las del servicio: lo que ya estaba ordenado no se mueve.
+        publicacion.setOrden((int) publicacionRepository.countByServicioId(servicioId));
         publicacion.setActivo(true);
 
         try {

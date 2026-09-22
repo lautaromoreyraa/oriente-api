@@ -13,7 +13,6 @@ public record ContenidoDeLandingResponse(
         List<ServicioPublicoResponse> servicios,
         List<ComboPublicoResponse> combos,
         NosotrosPublicoResponse nosotros,
-        List<PublicacionDeInstagramPublicaResponse> instagram,
         ContactoPublicoResponse contacto
 ) {
 }

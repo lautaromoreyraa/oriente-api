@@ -81,8 +81,18 @@ public class CatalogoDeServiciosServiceImpl implements CatalogoDeServiciosServic
     public void eliminar(Long id) {
         Servicio servicio = buscar(id);
         Set<String> imagenes = imagenesDe(servicio);
+        Set<String> videos = new HashSet<>();
+        servicio.getPublicaciones().forEach(publicacion -> {
+            if (publicacion.getMiniaturaPublicId() != null) {
+                imagenes.add(publicacion.getMiniaturaPublicId());
+            }
+            if (publicacion.getVideoPublicId() != null) {
+                videos.add(publicacion.getVideoPublicId());
+            }
+        });
+
         servicioRepository.delete(servicio);
-        eventos.publishEvent(ImagenesQuedaronHuerfanas.de(imagenes));
+        eventos.publishEvent(ImagenesQuedaronHuerfanas.de(imagenes, videos));
     }
 
     /** La foto principal mas las del carrusel. */

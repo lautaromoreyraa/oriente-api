@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 public record PublicacionDeInstagramResponse(
         Long id,
+        Long servicioId,
         String url,
         String tipo,
         String titulo,

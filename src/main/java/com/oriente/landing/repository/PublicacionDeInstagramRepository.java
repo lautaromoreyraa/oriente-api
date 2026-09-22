@@ -7,9 +7,9 @@ import java.util.List;
 
 public interface PublicacionDeInstagramRepository extends JpaRepository<PublicacionDeInstagram, Long> {
 
-    List<PublicacionDeInstagram> findAllByActivoTrueOrderByOrdenAsc();
+    List<PublicacionDeInstagram> findAllByServicioIdOrderByOrdenAsc(Long servicioId);
 
-    List<PublicacionDeInstagram> findAllByOrderByOrdenAsc();
+    long countByServicioId(Long servicioId);
 
     boolean existsByUrl(String url);
 

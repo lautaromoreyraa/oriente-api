@@ -17,8 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import org.springframework.web.bind.annotation.RequestParam;
 
-/** Las publicaciones de Instagram que se muestran en la landing, por URL. */
+/** Los reels y posteos de Instagram que ilustran cada servicio. */
 @RestController
 @RequestMapping("/api/admin/v1/instagram")
 public class InstagramController {
@@ -30,8 +31,8 @@ public class InstagramController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PublicacionDeInstagramResponse>> listar() {
-        return ResponseEntity.ok(publicacionService.listar());
+    public ResponseEntity<List<PublicacionDeInstagramResponse>> listar(@RequestParam Long servicioId) {
+        return ResponseEntity.ok(publicacionService.listarDelServicio(servicioId));
     }
 
     @GetMapping("/{id}")
@@ -39,17 +40,11 @@ public class InstagramController {
         return ResponseEntity.ok(publicacionService.obtenerPorId(id));
     }
 
-    @PostMapping
-    public ResponseEntity<PublicacionDeInstagramResponse> crear(
-            @Valid @RequestBody PublicacionDeInstagramRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(publicacionService.crear(request));
-    }
-
     /** Agrega una publicacion solo con el link: el contenido se trae de Instagram. */
     @PostMapping("/importar")
     public ResponseEntity<PublicacionDeInstagramResponse> importar(
             @Valid @RequestBody ImportacionDeInstagramRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(publicacionService.importar(request.url()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(publicacionService.importar(request.servicioId(), request.url()));
     }
 
     @PutMapping("/{id}")

@@ -1,9 +1,13 @@
 package com.oriente.landing.service.administracion.imagen;
 
+import com.oriente.landing.domain.PublicacionDeInstagram;
 import com.oriente.landing.dto.administracion.servicio.ImagenDeServicioRequest;
 import com.oriente.landing.dto.administracion.servicio.ServicioRequest;
 import com.oriente.landing.dto.administracion.servicio.ServicioResponse;
+import com.oriente.landing.enumeration.TipoDePublicacion;
 import com.oriente.landing.fixture.FixtureDeMysql;
+import com.oriente.landing.repository.PublicacionDeInstagramRepository;
+import com.oriente.landing.repository.ServicioRepository;
 import com.oriente.landing.service.administracion.servicio.CatalogoDeServiciosService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -43,11 +47,13 @@ class HuerfanasAlEditarTest {
     @Component
     static class EspiaDeEventos {
         final List<Set<String>> recibidos = new ArrayList<>();
+        final List<Set<String>> videos = new ArrayList<>();
 
         // Misma fase que el borrador real: si la transaccion no commitea, no llega.
         @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
         public void alQuedarHuerfanas(ImagenesQuedaronHuerfanas evento) {
             recibidos.add(evento.imagenes());
+            videos.add(evento.videos());
         }
     }
 
@@ -57,9 +63,16 @@ class HuerfanasAlEditarTest {
     @Autowired
     private EspiaDeEventos espia;
 
+    @Autowired
+    private ServicioRepository servicioRepository;
+
+    @Autowired
+    private PublicacionDeInstagramRepository publicacionRepository;
+
     @BeforeEach
     void limpiarLoEscuchado() {
         espia.recibidos.clear();
+        espia.videos.clear();
     }
 
     private ServicioRequest conImagenes(String titulo, String principal, String... delCarrusel) {
@@ -130,5 +143,29 @@ class HuerfanasAlEditarTest {
         assertEquals(
                 Set.of("oriente/principal-3", "oriente/foto-d", "oriente/foto-e"),
                 espia.recibidos.get(0));
+    }
+
+    @Test
+    @DisplayName("borrar el servicio avisa tambien por el video y la portada de sus publicaciones")
+    void alBorrarElServicioAvisaPorSusPublicaciones() {
+        ServicioResponse creado = catalogo.crear(conImagenes(unNombreUnico(), null));
+
+        PublicacionDeInstagram reel = new PublicacionDeInstagram();
+        reel.setServicio(servicioRepository.findById(creado.id()).orElseThrow());
+        reel.setUrl("https://www.instagram.com/reel/" + UUID.randomUUID() + "/");
+        reel.setTipo(TipoDePublicacion.REEL);
+        reel.setMiniaturaUrl("https://res.cloudinary.com/demo/image/upload/oriente/portada.jpg");
+        reel.setMiniaturaPublicId("oriente/portada");
+        reel.setVideoUrl("https://res.cloudinary.com/demo/video/upload/oriente/reel.mp4");
+        reel.setVideoPublicId("oriente/reel");
+        publicacionRepository.save(reel);
+        espia.recibidos.clear();
+        espia.videos.clear();
+
+        catalogo.eliminar(creado.id());
+
+        assertEquals(Set.of("oriente/portada"), espia.recibidos.get(0));
+        assertEquals(Set.of("oriente/reel"), espia.videos.get(0));
+        assertTrue(publicacionRepository.findAllByServicioIdOrderByOrdenAsc(creado.id()).isEmpty());
     }
 }

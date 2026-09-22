@@ -63,6 +63,7 @@ public class PublicacionDeInstagramMapperImpl implements PublicacionDeInstagramM
     public PublicacionDeInstagramResponse aResponse(PublicacionDeInstagram publicacion) {
         return new PublicacionDeInstagramResponse(
                 publicacion.getId(),
+                publicacion.getServicio().getId(),
                 publicacion.getUrl(),
                 publicacion.getTipo().name(),
                 publicacion.getTitulo(),

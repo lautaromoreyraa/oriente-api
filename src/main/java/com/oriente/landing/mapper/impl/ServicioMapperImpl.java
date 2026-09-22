@@ -14,9 +14,16 @@ import com.oriente.landing.mapper.ServicioMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import com.oriente.landing.mapper.PublicacionDeInstagramMapper;
 
 @Component
 public class ServicioMapperImpl implements ServicioMapper {
+
+    private final PublicacionDeInstagramMapper publicacionMapper;
+
+    public ServicioMapperImpl(PublicacionDeInstagramMapper publicacionMapper) {
+        this.publicacionMapper = publicacionMapper;
+    }
 
     @Override
     public void aplicar(ServicioRequest request, Servicio servicio) {
@@ -119,7 +126,11 @@ public class ServicioMapperImpl implements ServicioMapper {
                 servicio.getImagenUrl(),
                 servicio.getImagenAlt(),
                 servicio.getOrden(),
-                imagenes
+                imagenes,
+                servicio.getPublicaciones().stream()
+                        .filter(publicacion -> Boolean.TRUE.equals(publicacion.getActivo()))
+                        .map(publicacionMapper::aPublico)
+                        .toList()
         );
     }
 

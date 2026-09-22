@@ -18,6 +18,7 @@ public record ServicioPublicoResponse(
         String imagenUrl,
         String imagenAlt,
         Integer orden,
-        List<ImagenPublicaResponse> imagenes
+        List<ImagenPublicaResponse> imagenes,
+        List<PublicacionDeInstagramPublicaResponse> publicaciones
 ) {
 }
